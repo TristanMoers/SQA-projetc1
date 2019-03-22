@@ -1,7 +1,7 @@
 # Model
 
 Template : One, Multiple, Escaped, Nested, EscapedModified
-KeyValue : Empty, Match, Unmatch, SomMatch
+KeyValue : Empty, Match, Unmatch, SomeMatch
 ReplaceMissingKey : True, False
 MissingKeyReplacement : Null, KeyString
 ResolveEscapes : True, False
