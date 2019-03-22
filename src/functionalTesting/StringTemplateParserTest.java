@@ -52,8 +52,55 @@ public class StringTemplateParserTest {
     }
     
     
+   @Test(expected = IllegalArgumentException.class)
+   public void malformedTest1() {
+	   parser.parse("${hello", macroResolver);
+   }
     
-    
+   @Test(expected = NullPointerException.class)
+   public void nullTemplateTest() {
+           parser.parse(null, macroResolver);
+   }
+   @Test(expected = NullPointerException.class)
+   public void nullMapResolverTest() {
+           macroResolver =  StringTemplateParser.createMapMacroResolver(null);
+           parser.parse(ONE, macroResolver);
+   }
+   @Test
+   public void emptyTest() {
+           String output = parser.parse(EMPTY, macroResolver);
+           assertEquals("", output);
+   }
+   
+   @Test
+   public void malformedTest2() {
+           String output = parser.parse("${hello} %{people}?", macroResolver);
+           assertEquals(output, "yello %{people}?");
+   }
+   
+   @Test
+   public void noMacroTest() {
+           String output = parser.parse("No macro", macroResolver);
+           assertEquals(output, "No macro");
+   }
+	   
+   @Test
+   public void emptyMapTest() {
+           map = new HashMap<String, String>();
+           macroResolver =  StringTemplateParser.createMapMacroResolver(map);
+           String output = parser.parse("Yo ${hello}", macroResolver);
+           assertEquals(output, "Yo ");
+   }
+   @Test
+   public void replaceMacroWithNullValue() {
+           map = new HashMap<String, String>();
+           map.put("hello", null);
+           macroResolver = StringTemplateParser.createMapMacroResolver(map);
+           String output = parser.parse("Yo ${hello}", macroResolver);
+           assertEquals(output, "Yo ");
+   }
+
+   
     // ================== FUNCTIONNAL TESTING ====================
     
     public static final String EMPTY = "";
@@ -222,15 +269,7 @@ public class StringTemplateParserTest {
     	assertEquals("Escaping${aaa}", result);
     }
     
-    public void test14() {
-    	parser.setMacroPrefix("#");
-    	parser.setMacroStart("#[");
-    	parser.setMissingKeyReplacement("NOT");
-    	map = new HashMap<String, String>();
-    	macroResolver = StringTemplateParser.createMapMacroResolver(map);
-    	String result = parser.parse("Hello \\#[world} #[sup}", macroResolver);
-    	assertEquals("Hello #[world} NOT", result);
-    }
+
     
     @Test
     public void test15() {
@@ -264,6 +303,15 @@ public class StringTemplateParserTest {
     assertEquals(ONE, result);
     }
 
+    @Test
+    public void test18() {
+    	parser.setMissingKeyReplacement(MODIFIED_MISSING_KEY);
+    	parser.setMacroEnd(MODIFIED_END);
+    	parser.setMacroStart(MODIFIED_START);
+    	parser.setMacroPrefix(MODIFIED_PREFIX);
+    	String output = parser.parse(ONE, MATCH);
+    	assertEquals(ONE, output);
+    }
     
     @Test
     public void test19() {
@@ -313,8 +361,8 @@ public class StringTemplateParserTest {
     // parse double escaping
 	@Test 
 	public void test23() {
-		String output = parser.parse("Hello \\\\${world}!", macroResolver);
-		assertEquals("Hello \\wurld!", output);
+		String output = parser.parse("Hello \\\\${hello}!", macroResolver);
+		assertEquals("Hello \\yello!", output);
 	}
 
 	@Test // parse empty inner 
@@ -361,4 +409,59 @@ public class StringTemplateParserTest {
 	  String output = parser.parse("Hello ${world}!", macroResolver);
 	  assertEquals("Hello ${world}!", output);
 	}
+	
+	 @Test
+	 public void nullMacroPrefixTest() {
+		 parser.setMacroPrefix(null);
+		 String template = "${hello}";
+		 String output = parser.parse(template, macroResolver);
+		 System.out.println(output);
+		 assertEquals("yello", output);
+	 }
+	 
+	 @Test
+	 public void gettersSettersTest() {
+		 StringTemplateParser stp = StringTemplateParser.create();
+		 assertEquals(stp.isReplaceMissingKey(), true);
+		 assertEquals(stp.getMissingKeyReplacement(), null);
+		 assertEquals(stp.isResolveEscapes(), true);
+		 assertEquals(stp.getMacroPrefix(), "$");
+		 assertEquals(stp.getMacroStart(), "${");
+		 assertEquals(stp.getMacroEnd(), "}");
+		 assertEquals(stp.getEscapeChar(), '\\');
+		 stp.setParseValues(true);
+		 assertEquals(stp.isParseValues(), true);
+		 stp.setStrictFormat();
+		 assertEquals(stp.getMacroPrefix(), null);
+	 }
+	 
+	 @Test
+		public void macrosInnerChainTest() {
+			parser.setParseValues(true);
+			map = new HashMap<String, String>();
+			map.put("foobuzz", "world");
+			map.put("barfoo", "buzz");
+			map.put("baz", "foo");
+			macroResolver = StringTemplateParser.createMapMacroResolver(map);
+			String template = "Hello ${foo${bar${baz}}}!";
+			String output = parser.parse(template, macroResolver);
+			assertEquals("Hello world!", output);
+		}
+
+		@Test
+		public void unstrictMacrosInnerChainTest() {
+			parser.setParseValues(true);
+			parser.setMacroPrefix("$");
+			map = new HashMap<String, String>();
+			map.put("foobuzz", "world");
+			map.put("barfoo", "buzz");
+			map.put("baz", "foo");
+			macroResolver = StringTemplateParser.createMapMacroResolver(map);
+			String template = "$foo$bar$baz";
+			String output = parser.parse(template, macroResolver);
+			assertEquals("foo", output);
+		}
+
+	 
+	 
 }
