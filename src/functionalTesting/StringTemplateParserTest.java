@@ -307,73 +307,58 @@ public class StringTemplateParserTest {
     	assertEquals(MULTIPLE, result);
     }
     
-    // Template	KeyValue	ReplaceMissingKey	MissingKeyReplacement	ResolveEscapes	MacroPrefix	MacroStart	MacroEnd	EscapeChar	ParseValues
+    // Added after code coverage analysis ==========
     
     
-    // One	SomeMatch	True	KeyString	True	String	StartDefault	EndDefault	String	True
-    
-    
-    // One	Match	True	KeyString	True	PrefixDefault	StartDefault	String	String	False
-    
-    
-    // One	Unmatch	False	Null	True	String	StartDefault	EndDefault	EscapeCharDefault	False
-    
-    // One	Empty	True	KeyString	True	PrefixDefault	String	String	EscapeCharDefault	False
-    
-    
-    
-    
-    
-    
-    // Multiple	Match	True	Null	True	PrefixDefault	String	String	EscapeCharDefault	False
-    
-    // Multiple	Empty	True	KeyString	True	PrefixDefault	StartDefault	String	String	True
-    
-    // Multiple	SomeMatch	False	Null	True	String	StartDefault	EndDefault	EscapeCharDefault	True
-    
-    // Multiple	Unmatch	True	KeyString	True	PrefixDefault	StartDefault	EndDefault	EscapeCharDefault	True
-    
-    
-    
-    
-    
-    
-    // Nested	Empty	False	Null	True	String	String	EndDefault	EscapeCharDefault	True 
+    // parse double escaping
+	@Test 
+	public void test23() {
+		String output = parser.parse("Hello \\\\${world}!", macroResolver);
+		assertEquals("Hello \\wurld!", output);
+	}
 
-    // Nested	SomeMatch	False	Null	True	PrefixDefault	String	String	String	False
-    
-    // Nested	Unmatch	True	KeyString	True	String	StartDefault	String	EscapeCharDefault	True
-    
-    // Nested	Match	True	KeyString	True	String	StartDefault	String	EscapeCharDefault	False
- 
-    // Nested	Match	True	KeyString	True	String	StartDefault	String	EscapeCharDefault	False
-    
-    
-    
-    
-    
-    // Escaped	SomeMatch	True	KeyString	True	String	String	String	EscapeCharDefault	True
-    
-    // Escaped	Unmatch	False	Null	True	PrefixDefault	StartDefault	EndDefault	String	False
-    
-    // Escaped	Match	False	Null	False	String	StartDefault	EndDefault	EscapeCharDefault	True
-    
-    // Escaped	Empty	False	Null	True	PrefixDefault	String	String	String	False
-    
-    // Escaped	Match	True	Null	False	PrefixDefault	String	String	EscapeCharDefault	False
-    
-    
-    
-    
-    
-    //EscapedModified	Match	True	Null	True	PrefixDefault	String	String	String	False
-    
-    // EscapedModified	Unmatch	True	KeyString	True	PrefixDefault	String	String	String	True
-    
-    // EscapedModified	Empty	False	Null	True	String	StartDefault	EndDefault	EscapeCharDefault	False
-    
-    // EscapedModified	SomeMatch	True	Null	True	PrefixDefault	StartDefault	EndDefault	EscapeCharDefault	True
-    
-    
-    
+	@Test // parse empty inner 
+	public void test24() {
+		String output = parser.parse("Hello ${${${}}}!", macroResolver);
+		assertEquals("Hello !", output);
+	}
+
+	@Test // null key replacement
+	public void test25() {
+		parser.setMissingKeyReplacement(null);
+		parser.setReplaceMissingKey(true);
+		String output = parser.parse("${nope}", macroResolver);
+		assertEquals("", output);
+	}
+
+	@Test // unresolved escape sequence
+	public void test26() {
+		parser.setResolveEscapes(false);
+		String output = parser.parse("Hello \\${world}", macroResolver);
+		assertEquals(output, "Hello \\${world}");
+	}
+
+	@Test // macro in map with ParseValue = true
+	public void test27() {
+		parser.setParseValues(true);
+		map = new HashMap<String, String>();
+		map.put("foo", "${bar}");
+		map.put("bar", "baz");
+		macroResolver = StringTemplateParser.createMapMacroResolver(map);
+		String template = "Hello $foo!";
+		String output = parser.parse(template, macroResolver);
+		assertEquals("Hello baz!", output);
+	}
+
+	@Test // catch exception
+	public void test28() {
+		MacroResolver macroResolver = new MacroResolver() {
+	        public String resolve(String macroName) {
+	            throw new IllegalArgumentException();
+	        }
+	    };
+		parser.setReplaceMissingKey(false);
+	  String output = parser.parse("Hello ${world}!", macroResolver);
+	  assertEquals("Hello ${world}!", output);
+	}
 }
