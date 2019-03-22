@@ -1,0 +1,21 @@
+# Model
+
+Template : One, Multiple, Escaped, Nested, EscapedModified
+KeyValue : Empty, Match, Unmatch, SomMatch
+ReplaceMissingKey : True, False
+MissingKeyReplacement : Null, KeyString
+ResolveEscapes : True, False
+MacroPrefix : PrefixDefault, String
+MacroStart : StartDefault, String
+MacroEnd : EndDefault, String
+EscapeChar : EscapeCharDefault, String
+ParseValues : True, False
+
+
+
+
+# Constraints
+IF [ReplaceMissingKey] = "False" THEN [MissingKeyReplacement] = "Null";
+IF [ResolveEscapes] = "False" THEN [MissingKeyReplacement] = "Null" AND [EscapeChar] = "EscapeCharDefault" AND [Template] = "Escaped" AND [KeyValue] = "
+Match";
+IF [EscapeChar] = "String" THEN [ResolveEscapes] = "True";

@@ -1,0 +1,18 @@
+#
+# StringTemplateParser model
+#
+
+Template: SingleMacro, MultipleMacro, NestedMacro, EscapedMacro, ModifiedEscapedMacro
+Map: Empty, UnmatchingValues, MatchingValues, PartiallyMatchingValues
+ReplaceMissing: Default, False
+MissingKeyReplacement: Default, SetString
+ResolveEscape: Default, False
+MacroStart: Default, Changed
+MacroPrefix: Default, Changed
+MacroEnd: Default, Changed
+EscapeChar: Default, Modified
+
+# Constraints
+IF [ReplaceMissing] = "False" THEN [MissingKeyReplacement] = "Default";
+IF [ResolveEscape] = "False" THEN [Template] = "EscapedMacro" AND [Map] = "MatchingValues" AND [MissingKeyReplacement] = "Default" AND [EscapeChar] = "Default";
+IF [EscapeChar] = "Modified" THEN [ResolveEscape] = "Default";
