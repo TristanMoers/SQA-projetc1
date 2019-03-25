@@ -451,7 +451,21 @@ public class StringTemplateParserTest {
 		String result = parser.parse("$foo$bar$baz", macroResolver);
 		assertEquals("foo", result);
 	}
-
+ 
 	 
+	
+	@Test
+	public void objectReturnValueMutator() {
+		assertNotNull(parser.setMissingKeyReplacement(MODIFIED_MISSING_KEY));
+		assertNotNull(parser.getMissingKeyReplacement());
+		assertNotNull(parser.setMacroPrefix(DEFAULT_PREFIX));
+		assertNotNull(parser.setMacroEnd(DEFAULT_END));
+		assertNotNull(parser.setResolveEscapes(true));
+		assertNotNull(parser.setMacroStart(DEFAULT_START));
+		assertNotNull(parser.setEscapeChar(DEFAULT_ESCAPE));
+		assertNotNull(parser.setStrictFormat());
+		assertNotNull(parser.setParseValues(true));
+	}
+	
 	 
 }
